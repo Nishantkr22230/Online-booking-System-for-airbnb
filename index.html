@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StayTrack Pro - Luxury Stay & Room Operations</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-gradient: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #2563eb 100%);
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --danger: #ef4444;
+      --danger-bg: #fef2f2;
+      --danger-border: #fca5a5;
+      --success: #10b981;
+      --success-bg: #ecfdf5;
+      --success-border: #a7f3d0;
+      --warning: #f59e0b;
+      --warning-bg: #fffbeb;
+      --warning-border: #fde68a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding-bottom: 60px; }
+
+    /* Navbar */
+    .navbar {
+      background: var(--primary-gradient);
+      color: #fff;
+      padding: 16px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.25);
+    }
+    .brand-wrap { display: flex; align-items: center; gap: 12px; }
+    .brand-icon {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      width: 42px; height: 42px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; font-weight: 800;
+    }
+    .brand-title { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.5px; }
+    .brand-sub { font-size: 0.72rem; color: #94a3b8; }
+    .nav-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .btn {
+      padding: 8px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 600;
+      border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .btn-action { background: #fff; color: #1e3a8a; font-weight: 700; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    .btn-glass { background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.25); }
+    .btn-glass:hover { background: rgba(255,255,255,0.25); }
+
+    .sync-pill {
+      background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #a7f3d0;
+      padding: 4px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700;
+      display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+    }
+    .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #10b981; animation: pulse 2s infinite; }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+    .container { max-width: 1400px; margin: 0 auto; padding: 18px 16px; }
+
+    /* Occupancy Bar */
+    .occupancy-card {
+      background: #ffffff; border-radius: 12px; padding: 14px 18px; margin-bottom: 16px;
+      border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+    .occ-head { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; color: var(--muted); margin-bottom: 8px; }
+    .occ-track { width: 100%; height: 10px; background: #e2e8f0; border-radius: 20px; overflow: hidden; }
+    .occ-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #3b82f6, #10b981); border-radius: 20px; transition: width 0.4s ease; }
+
+    /* Metrics Grid */
+    .metrics-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px;
+    }
+    .metric-box {
+      background: var(--surface); border-radius: 12px; padding: 14px 16px;
+      border: 1px solid var(--border); position: relative; overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+    .metric-box::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary); }
+    .m-checkin::before { background: var(--danger); }
+    .m-checkout::before { background: var(--success); }
+    .m-yet::before { background: var(--warning); }
+    .m-lbl { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; color: var(--muted); }
+    .m-val { font-size: 1.6rem; font-weight: 800; margin-top: 4px; }
+
+    /* Panels */
+    .panel {
+      background: var(--surface); border-radius: 14px; border: 1px solid var(--border);
+      padding: 18px; margin-bottom: 22px; box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+    .panel-header {
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px;
+    }
+    .panel-title { font-size: 1.05rem; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+    .date-navigator { display: flex; align-items: center; gap: 6px; background: #f8fafc; padding: 4px; border-radius: 8px; border: 1px solid var(--border); }
+    .date-nav-btn {
+      background: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px;
+      font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: 0.15s;
+    }
+    .date-nav-btn:hover { background: #f1f5f9; }
+    .date-nav-label { font-size: 0.85rem; font-weight: 800; min-width: 130px; text-align: center; }
+
+    /* Room Search Bar */
+    .filter-bar {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; align-items: center;
+    }
+    .filter-input {
+      padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.82rem; outline: none; min-width: 220px;
+    }
+
+    /* Room Cards */
+    .rooms-scroll-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px;
+    }
+    .room-card {
+      background: #fcfdfe; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px;
+      display: flex; flex-direction: column; gap: 10px; transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .room-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+    .room-card-head {
+      display: flex; justify-content: space-between; align-items: center; padding-bottom: 6px; border-bottom: 1px solid #eef2f6;
+    }
+    .room-name { font-size: 0.88rem; font-weight: 800; color: #1e293b; }
+    .room-badge { width: 8px; height: 8px; border-radius: 50%; background: #10b981; }
+
+    /* Slot Cards */
+    .slot-item {
+      border-radius: 8px; padding: 9px; font-size: 0.74rem; cursor: pointer; transition: all 0.15s;
+      display: flex; flex-direction: column; gap: 3px;
+    }
+    .slot-open { background: var(--success-bg); border: 1px solid var(--success-border); color: #065f46; }
+    .slot-open:hover { background: #d1fae5; transform: scale(1.02); }
+    .slot-taken-red { background: var(--danger-bg); border: 1px solid var(--danger-border); color: #991b1b; }
+    .slot-taken-yellow { background: var(--warning-bg); border: 1px solid var(--warning-border); color: #92400e; }
+    .slot-taken-green { background: var(--success-bg); border: 1px solid var(--success-border); color: #065f46; }
+    .slot-blocked { background: #f1f5f9; border: 1px dashed #cbd5e1; color: #94a3b8; cursor: not-allowed; }
+    .slot-header { display: flex; justify-content: space-between; font-weight: 700; }
+    .slot-state { font-weight: 800; font-size: 0.68rem; text-transform: uppercase; }
+
+    /* Status Badges */
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; cursor: pointer;
+    }
+    .pill-red { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
+    .pill-green { background: #dcfce7; color: #16a34a; border: 1px solid #86efac; }
+    .pill-yellow { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
+    .circle-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+    /* Status Switcher */
+    .status-switcher {
+      display: inline-flex; gap: 3px; background: #f1f5f9; padding: 2px; border-radius: 6px; border: 1px solid var(--border);
+    }
+    .btn-sw {
+      border: none; padding: 3px 7px; border-radius: 4px; font-size: 0.68rem; font-weight: 700; cursor: pointer; background: transparent; color: #64748b;
+    }
+    .btn-sw.act-yet { background: #f59e0b; color: #fff; }
+    .btn-sw.act-in { background: #dc2626; color: #fff; }
+    .btn-sw.act-out { background: #16a34a; color: #fff; }
+
+    /* Table */
+    .table-responsive { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: left; }
+    th {
+      background: #f8fafc; color: var(--muted); padding: 10px 12px; font-weight: 700;
+      border-bottom: 1px solid var(--border); font-size: 0.72rem; text-transform: uppercase;
+      user-select: none;
+    }
+    th.sortable { cursor: pointer; }
+    th.sortable:hover { background: #f1f5f9; color: var(--primary); }
+    .sort-icon { margin-left: 4px; font-size: 0.7rem; }
+    td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+
+    /* Action Buttons */
+    .btn-icon {
+      border: none; padding: 5px 8px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; font-weight: 700;
+    }
+    .btn-edit { background: #eff6ff; color: #2563eb; margin-right: 4px; }
+    .btn-delete { background: #fee2e2; color: #dc2626; }
+
+    /* Modal Form */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(3px);
+      display: none; align-items: center; justify-content: center; z-index: 999; padding: 16px;
+    }
+    .modal-window {
+      background: #fff; border-radius: 14px; width: 100%; max-width: 500px; max-height: 90vh;
+      overflow-y: auto; padding: 22px; box-shadow: 0 20px 30px rgba(0,0,0,0.25);
+    }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; }
+    .input-box { width: 100%; padding: 9px 12px; border-radius: 7px; border: 1px solid var(--border); font-size: 0.85rem; outline: none; background: #fff; }
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .radio-group { display: flex; gap: 16px; align-items: center; padding: 8px 10px; background: #f8fafc; border-radius: 6px; border: 1px solid var(--border); }
+    .radio-group label { margin: 0; font-size: 0.82rem; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
+    .check-opt { font-size: 0.76rem; display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 500; }
+  </style>
+  <!-- Firebase Realtime Database + Anonymous Auth for multi-device sync -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+</head>
+<body>
+
+  <!-- Top Nav -->
+  <nav class="navbar">
+    <div class="brand-wrap">
+      <div class="brand-icon">🏨</div>
+      <div>
+        <div class="brand-title">StayTrack Pro</div>
+        <div class="brand-sub">Operations & Booking Management</div>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <!-- Sync Status Pill -->
+      <span class="sync-pill" onclick="setupSyncId()" title="Tap to connect Firebase and set shared Workspace ID">
+        <span class="sync-dot"></span>
+        <span id="syncText">Sync Active</span>
+      </span>
+
+      <button class="btn btn-action" onclick="openModal()">+ Add Booking</button>
+      <button class="btn btn-glass" onclick="triggerImport()">📂 Import JSON</button>
+      <input type="file" id="jsonFileInput" accept=".json,application/json" style="display:none;" onchange="handleImportFile(event)">
+      <button class="btn btn-glass" onclick="exportData()">💾 Backup JSON</button>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Occupancy Bar -->
+    <div class="occupancy-card">
+      <div class="occ-head">
+        <span>TODAY'S OCCUPANCY PROGRESS</span>
+        <span id="occPercentText">0% Booked</span>
+      </div>
+      <div class="occ-track">
+        <div class="occ-fill" id="occFillBar"></div>
+      </div>
+    </div>
+
+    <!-- Metrics Cards -->
+    <div class="metrics-grid">
+      <div class="metric-box">
+        <div class="m-lbl">Total Rooms</div>
+        <div class="m-val" id="mTotalRooms">11</div>
+      </div>
+      <div class="metric-box">
+        <div class="m-lbl">Booked Today</div>
+        <div class="m-val" id="mBookedToday">0</div>
+      </div>
+      <div class="metric-box m-yet">
+        <div class="m-lbl">Yet to Check-In</div>
+        <div class="m-val" style="color:#b45309;" id="mYetCheckIn">0</div>
+      </div>
+      <div class="metric-box m-checkin">
+        <div class="m-lbl">Checked In</div>
+        <div class="m-val" style="color:var(--danger);" id="mCheckedIn">0</div>
+      </div>
+      <div class="metric-box m-checkout">
+        <div class="m-lbl">Checked Out</div>
+        <div class="m-val" style="color:var(--success);" id="mCheckedOut">0</div>
+      </div>
+      <div class="metric-box">
+        <div class="m-lbl">Today's Revenue</div>
+        <div class="m-val" style="color:var(--primary);" id="mRevenue">₹0</div>
+      </div>
+    </div>
+
+    <!-- Room Availability Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">📅 Room Availability (Smart Conflict Locking)</div>
+        <div class="date-navigator">
+          <button class="date-nav-btn" onclick="shiftDate(-1)">◀ Prev</button>
+          <div class="date-nav-label" id="dateLabelDisplay">Today</div>
+          <button class="date-nav-btn" onclick="shiftDate(1)">Next ▶</button>
+          <button class="date-nav-btn" style="background:#e0f2fe; color:#0284c7;" onclick="goToday()">Today</button>
+          <button class="date-nav-btn" onclick="addCustomRoom()">+ Custom Room</button>
+        </div>
+      </div>
+
+      <!-- Quick Room Search Filter -->
+      <div class="filter-bar">
+        <input type="text" id="roomFilterInput" class="filter-input" placeholder="🔍 Filter rooms (e.g. TCM, Omaxe)..." oninput="renderDashboard()">
+      </div>
+
+      <div class="rooms-scroll-grid" id="roomsDisplayGrid"></div>
+    </div>
+
+    <!-- Bookings Table Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">📋 Scheduled Bookings (<span id="countIndicator">0</span>)</div>
+      </div>
+
+      <!-- Dynamic Search & Status Filter for Bookings -->
+      <div class="filter-bar">
+        <input type="text" id="bookingSearchInput" class="filter-input" placeholder="🔍 Search guest, room or platform..." oninput="renderDashboard()">
+        <select id="statusFilterSelect" class="filter-input" style="min-width:160px;" onchange="renderDashboard()">
+          <option value="ALL">All Statuses</option>
+          <option value="Yet to Check-In">Yet to Check-In</option>
+          <option value="Check-In">Check-In</option>
+          <option value="Check-Out">Check-Out</option>
+        </select>
+      </div>
+
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th class="sortable" onclick="sortTable('guest')">Guest Name <span id="sort-guest" class="sort-icon">⇅</span></th>
+              <th class="sortable" onclick="sortTable('room')">Room <span id="sort-room" class="sort-icon">⇅</span></th>
+              <th class="sortable" onclick="sortTable('slot')">Time Slot <span id="sort-slot" class="sort-icon">⇅</span></th>
+              <th class="sortable" onclick="sortTable('checkoutTime')">Check-Out Time <span id="sort-checkoutTime" class="sort-icon">⇅</span></th>
+              <th class="sortable" onclick="sortTable('source')">Platform <span id="sort-source" class="sort-icon">⇅</span></th>
+              <th class="sortable" onclick="sortTable('amount')">Amount <span id="sort-amount" class="sort-icon">⇅</span></th>
+              <th>ID</th>
+              <th class="sortable" onclick="sortTable('status')">Status <span id="sort-status" class="sort-icon">⇅</span></th>
+              <th>Quick Switch</th>
+              <th>Housekeeping</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="bookingsTbody">
+            <tr><td colspan="11" style="text-align:center; color:#94a3b8; padding:24px;">No reservations found for this date.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Booking Entry & Modification Modal -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal-window">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+        <h3 style="font-size:1.05rem; font-weight:800;" id="modalHeading">Add New Reservation</h3>
+        <button onclick="closeModal()" style="border:none; background:none; font-size:1.3rem; cursor:pointer; color:#64748b;">✕</button>
+      </div>
+      <form id="bookingEntryForm">
+        <input type="hidden" id="editIndex" value="-1">
+
+        <div class="form-group">
+          <label>Select Room</label>
+          <select class="input-box" id="fRoomSelect" required onchange="updateAvailableSlotOptions()"></select>
+        </div>
+        <div class="row-2">
+          <div class="form-group">
+            <label>Platform</label>
+            <select class="input-box" id="fPlatformSelect" required>
+              <option value="Airbnb">Airbnb</option>
+              <option value="OYO">OYO</option>
+              <option value="MakeMyTrip">MakeMyTrip</option>
+              <option value="Goibibo">Goibibo</option>
+              <option value="Agoda">Agoda</option>
+              <option value="Direct Booking">Direct Booking</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Time Slot</label>
+            <select class="input-box" id="fSlotSelect" required></select>
+          </div>
+        </div>
+        <div class="row-3">
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="fDateInput" class="input-box" required onchange="updateAvailableSlotOptions()">
+          </div>
+          <div class="form-group">
+            <label>Check-Out Time</label>
+            <input type="time" id="fCheckoutTime" class="input-box" value="10:00" required>
+          </div>
+          <div class="form-group">
+            <label>Amount (₹)</label>
+            <input type="number" id="fAmountInput" class="input-box" value="0" required>
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="form-group">
+            <label>Guest Name</label>
+            <input type="text" id="fGuestInput" class="input-box" placeholder="Guest Name" required>
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select class="input-box" id="fStatusSelect" required>
+              <option value="Yet to Check-In">Yet to Check-In (🟡 Yellow)</option>
+              <option value="Check-In">Check-In (🔴 Red)</option>
+              <option value="Check-Out">Check-Out (🟢 Green)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Guest ID Received?</label>
+          <div class="radio-group">
+            <label><input type="radio" name="idReceived" value="Yes" checked> Yes (Verified)</label>
+            <label><input type="radio" name="idReceived" value="No"> No (Pending)</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Housekeeping Checklist</label>
+          <div class="check-grid">
+            <label class="check-opt"><input type="checkbox" id="ckComfort"> Comfort</label>
+            <label class="check-opt"><input type="checkbox" id="ckBedsheet"> Bedsheet</label>
+            <label class="check-opt"><input type="checkbox" id="ckTowel"> Towel</label>
+            <label class="check-opt"><input type="checkbox" id="ckMat"> Mat</label>
+            <label class="check-opt"><input type="checkbox" id="ckHandwash"> Handwash</label>
+            <label class="check-opt"><input type="checkbox" id="ckKitchen"> Kitchen Set</label>
+            <label class="check-opt"><input type="checkbox" id="ckMasala"> Masala</label>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-action" id="submitBtn" style="width:100%; background:var(--primary); color:#fff; padding:12px; justify-content:center; margin-top:8px;">
+          Confirm Booking
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const INITIAL_ROOMS = [
+      "Omaxe 718", "Gaur City centre 1454", "Lohegaon Top floor",
+      "TCM 1109", "TCM 1234", "TCM 1238", "TCM 1248", "TCM 1249",
+      "TCM 1236A", "TCM 1445/2", "TCM 1449"
+    ];
+    const TIME_SLOTS = [
+      "Morning (10am - 6pm)",
+      "Night (8pm - 10am)",
+      "Full Day (12pm - 10am)"
+    ];
+
+    function cleanRoomName(r) {
+      if (!r) return "";
+      if (typeof r === 'string') return r.trim();
+      if (typeof r === 'object') {
+        return (r.name || r.room || r.roomName || r.title || Object.values(r)[0] || "Unknown Room").toString().trim();
+      }
+      return String(r).trim();
+    }
+
+    let rawRooms = JSON.parse(localStorage.getItem('st_pro_rooms')) || INITIAL_ROOMS;
+    let roomList = rawRooms.map(cleanRoomName).filter(Boolean);
+    if (roomList.length === 0) roomList = [...INITIAL_ROOMS];
+
+    let rawBookings = JSON.parse(localStorage.getItem('st_pro_bookings')) || [];
+    let reservations = rawBookings.map(b => ({
+      room: cleanRoomName(b.room),
+      source: b.source || b.platform || "Direct Booking",
+      slot: b.slot || b.timeSlot || "Full Day (12pm - 10am)",
+      date: normalizeDate(b.date),
+      checkoutTime: b.checkoutTime || "10:00",
+      amount: Number(b.amount) || 0,
+      guest: b.guest || b.guestName || "Guest",
+      status: b.status || "Yet to Check-In",
+      idReceived: (b.idReceived === 'Yes' || b.idReceived === true || b.id === 'Verified') ? 'Yes' : 'No',
+      checklist: Array.isArray(b.checklist) ? b.checklist : []
+    }));
+
+    let selectedDate = new Date();
+    let currentSortCol = null;
+    let currentSortAsc = true;
+
+    function toIsoDate(d) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function toNiceDate(d) {
+      return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    function normalizeDate(dStr) {
+      if (!dStr) return toIsoDate(new Date());
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dStr)) return dStr;
+      const parts = dStr.split(/[\/\-\.]/);
+      if (parts.length === 3) {
+        if (parts[0].length === 4) return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+        if (parts[2].length === 4) return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+      }
+      return toIsoDate(new Date(dStr));
+    }
+
+    function isSlotMatch(slot1, slot2) {
+      if (!slot1 || !slot2) return false;
+      const s1 = slot1.toLowerCase();
+      const s2 = slot2.toLowerCase();
+      if (s1.includes("morning") && s2.includes("morning")) return true;
+      if (s1.includes("night") && s2.includes("night")) return true;
+      if (s1.includes("full") && s2.includes("full")) return true;
+      return s1 === s2;
+    }
+
+    function setManualStatus(idx, status) {
+      reservations[idx].status = status;
+      persistData();
+      renderDashboard();
+    }
+
+    function sortTable(column) {
+      if (currentSortCol === column) {
+        currentSortAsc = !currentSortAsc;
+      } else {
+        currentSortCol = column;
+        currentSortAsc = true;
+      }
+      renderDashboard();
+    }
+
+    function renderDashboard() {
+      const dateKey = toIsoDate(selectedDate);
+      document.getElementById('dateLabelDisplay').innerText = toNiceDate(selectedDate);
+
+      let dayBookings = reservations.filter(r => r.date === dateKey);
+
+      // Metrics
+      document.getElementById('mTotalRooms').innerText = roomList.length;
+      document.getElementById('mBookedToday').innerText = dayBookings.length;
+      document.getElementById('mYetCheckIn').innerText = dayBookings.filter(b => b.status.toLowerCase().includes('yet')).length;
+      document.getElementById('mCheckedIn').innerText = dayBookings.filter(b => b.status === 'Check-In').length;
+      document.getElementById('mCheckedOut').innerText = dayBookings.filter(b => b.status === 'Check-Out').length;
+
+      const totalRevenue = dayBookings.reduce((sum, b) => sum + (parseFloat(b.amount) || 0), 0);
+      document.getElementById('mRevenue').innerText = '₹' + totalRevenue.toLocaleString('en-IN');
+
+      const totalPossibleSlots = roomList.length * 3;
+      const pct = Math.round((dayBookings.length / (totalPossibleSlots || 1)) * 100);
+      document.getElementById('occPercentText').innerText = `${pct}% Booked (${dayBookings.length} slots used today)`;
+      document.getElementById('occFillBar').style.width = `${Math.min(pct, 100)}%`;
+
+      // Filter Rooms by search input
+      const roomSearch = (document.getElementById('roomFilterInput')?.value || '').toLowerCase().trim();
+      const displayedRooms = roomList.filter(r => cleanRoomName(r).toLowerCase().includes(roomSearch));
+
+      // Render Room Availability Cards
+      const grid = document.getElementById('roomsDisplayGrid');
+      grid.innerHTML = '';
+
+      displayedRooms.forEach(roomName => {
+        const cleanName = cleanRoomName(roomName);
+        const card = document.createElement('div');
+        card.className = 'room-card';
+        card.innerHTML = `
+          <div class="room-card-head">
+            <span class="room-name">${cleanName}</span>
+            <span class="room-badge"></span>
+          </div>
+        `;
+
+        const roomBookings = dayBookings.filter(b => cleanRoomName(b.room).toLowerCase() === cleanName.toLowerCase());
+        const fullDayBooked = roomBookings.find(b => b.slot.toLowerCase().includes("full"));
+        const morningBooked = roomBookings.find(b => b.slot.toLowerCase().includes("morning"));
+        const nightBooked = roomBookings.find(b => b.slot.toLowerCase().includes("night"));
+
+        TIME_SLOTS.forEach(slotTemplate => {
+          const directBooked = roomBookings.find(b => isSlotMatch(b.slot, slotTemplate));
+          const slotDiv = document.createElement('div');
+
+          if (directBooked) {
+            let statusClass = 'slot-taken-red';
+            let statusIcon = '🔴';
+            if (directBooked.status.toLowerCase().includes('yet')) {
+              statusClass = 'slot-taken-yellow';
+              statusIcon = '🟡';
+            } else if (directBooked.status === 'Check-Out') {
+              statusClass = 'slot-taken-green';
+              statusIcon = '🟢';
+            }
+
+            slotDiv.className = `slot-item ${statusClass}`;
+            slotDiv.innerHTML = `
+              <div class="slot-header">
+                <span>${slotTemplate.split(' ')[0]}</span>
+                <span class="slot-state">${statusIcon} ${directBooked.status}</span>
+              </div>
+              <div style="font-size:0.68rem; margin-top:2px;"><b>${directBooked.guest}</b> (${directBooked.source})</div>
+              <div style="font-size:0.64rem; opacity:0.9;">Out: ${directBooked.checkoutTime || '10:00'}</div>
+            `;
+          } else if (slotTemplate.includes("Full Day") && (morningBooked || nightBooked)) {
+            const reason = (morningBooked && nightBooked) ? "Morning & Night Booked" : (morningBooked ? "Morning Booked" : "Night Booked");
+            slotDiv.className = 'slot-item slot-blocked';
+            slotDiv.innerHTML = `
+              <div class="slot-header">
+                <span>Full Day</span>
+                <span class="slot-state">🔒 LOCKED</span>
+              </div>
+              <div style="font-size:0.65rem;">Auto-Locked (${reason})</div>
+            `;
+          } else if ((slotTemplate.includes("Morning") || slotTemplate.includes("Night")) && fullDayBooked) {
+            slotDiv.className = 'slot-item slot-blocked';
+            slotDiv.innerHTML = `
+              <div class="slot-header">
+                <span>${slotTemplate.split(' ')[0]}</span>
+                <span class="slot-state">🔒 LOCKED</span>
+              </div>
+              <div style="font-size:0.65rem;">Auto-Locked (Full Day Active)</div>
+            `;
+          } else {
+            slotDiv.className = 'slot-item slot-open';
+            slotDiv.innerHTML = `
+              <div class="slot-header">
+                <span>${slotTemplate.split(' ')[0]}</span>
+                <span class="slot-state">AVAILABLE</span>
+              </div>
+              <div style="font-size:0.65rem; opacity:0.8;">+ Tap to Book</div>
+            `;
+            slotDiv.onclick = () => openModal(cleanName, slotTemplate, dateKey);
+          }
+          card.appendChild(slotDiv);
+        });
+
+        grid.appendChild(card);
+      });
+
+      // Update Sort Icons
+      document.querySelectorAll('.sort-icon').forEach(el => el.innerText = '⇅');
+      if (currentSortCol) {
+        const activeIcon = document.getElementById(`sort-${currentSortCol}`);
+        if (activeIcon) activeIcon.innerText = currentSortAsc ? '▲' : '▼';
+      }
+
+      // Filter Table Bookings (Dynamic Search + Status Filter)
+      const bSearch = (document.getElementById('bookingSearchInput')?.value || '').toLowerCase().trim();
+      const statusFilter = document.getElementById('statusFilterSelect')?.value || 'ALL';
+
+      let filteredBookings = dayBookings.filter(b => {
+        const matchesSearch = b.guest.toLowerCase().includes(bSearch) || 
+                              cleanRoomName(b.room).toLowerCase().includes(bSearch) || 
+                              b.source.toLowerCase().includes(bSearch);
+        const matchesStatus = (statusFilter === 'ALL') || (b.status === statusFilter);
+        return matchesSearch && matchesStatus;
+      });
+
+      // Apply Sorting
+      if (currentSortCol) {
+        filteredBookings.sort((a, b) => {
+          let valA = a[currentSortCol] || '';
+          let valB = b[currentSortCol] || '';
+
+          if (currentSortCol === 'amount') {
+            valA = parseFloat(valA) || 0;
+            valB = parseFloat(valB) || 0;
+          } else {
+            valA = valA.toString().toLowerCase();
+            valB = valB.toString().toLowerCase();
+          }
+
+          if (valA < valB) return currentSortAsc ? -1 : 1;
+          if (valA > valB) return currentSortAsc ? 1 : -1;
+          return 0;
+        });
+      }
+
+      // Render Table
+      const tbody = document.getElementById('bookingsTbody');
+      document.getElementById('countIndicator').innerText = filteredBookings.length;
+
+      if (filteredBookings.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="11" style="text-align:center; color:#94a3b8; padding:24px;">No reservations match the filters.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = '';
+      filteredBookings.forEach(item => {
+        const originalIndex = reservations.indexOf(item);
+        
+        let statusBadge = '';
+        if (item.status === 'Check-In') {
+          statusBadge = `<span class="status-pill pill-red"><span class="circle-dot" style="background:#dc2626;"></span> Check-In</span>`;
+        } else if (item.status === 'Check-Out') {
+          statusBadge = `<span class="status-pill pill-green"><span class="circle-dot" style="background:#16a34a;"></span> Check-Out</span>`;
+        } else {
+          statusBadge = `<span class="status-pill pill-yellow"><span class="circle-dot" style="background:#f59e0b;"></span> Yet to Check-In</span>`;
+        }
+
+        const switcher = `
+          <div class="status-switcher">
+            <button class="btn-sw ${item.status.includes('Yet') ? 'act-yet' : ''}" onclick="setManualStatus(${originalIndex}, 'Yet to Check-In')">YET</button>
+            <button class="btn-sw ${item.status === 'Check-In' ? 'act-in' : ''}" onclick="setManualStatus(${originalIndex}, 'Check-In')">IN</button>
+            <button class="btn-sw ${item.status === 'Check-Out' ? 'act-out' : ''}" onclick="setManualStatus(${originalIndex}, 'Check-Out')">OUT</button>
+          </div>
+        `;
+
+        const idBadge = item.idReceived === 'Yes' 
+          ? `<span style="color:#16a34a; font-weight:700; font-size:0.75rem;">✓ Verified</span>` 
+          : `<span style="color:#f59e0b; font-weight:700; font-size:0.75rem;">! Pending</span>`;
+
+        const chkBadges = (item.checklist || []).map(c => `<span style="background:#f1f5f9; padding:2px 5px; border-radius:4px; font-size:0.68rem; margin:1px; display:inline-block;">${c}</span>`).join('') || '<span style="color:#94a3b8;">None</span>';
+
+        tbody.innerHTML += `
+          <tr>
+            <td><strong>${item.guest}</strong></td>
+            <td><b>${cleanRoomName(item.room)}</b></td>
+            <td><small style="color:#64748b;">${item.slot}</small></td>
+            <td><strong style="color:#1e3a8a;">${item.checkoutTime || '10:00'}</strong></td>
+            <td><span style="background:#e2e8f0; padding:2px 6px; border-radius:4px; font-weight:700; font-size:0.72rem;">${item.source}</span></td>
+            <td>₹${Number(item.amount || 0).toLocaleString('en-IN')}</td>
+            <td>${idBadge}</td>
+            <td>${statusBadge}</td>
+            <td>${switcher}</td>
+            <td style="max-width:140px;">${chkBadges}</td>
+            <td>
+              <button class="btn-icon btn-edit" onclick="editBooking(${originalIndex})" title="Edit Booking">✏️</button>
+              <button class="btn-icon btn-delete" onclick="removeReservation(${originalIndex})" title="Delete Booking">🗑️</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function shiftDate(offset) {
+      selectedDate.setDate(selectedDate.getDate() + offset);
+      renderDashboard();
+    }
+    function goToday() {
+      selectedDate = new Date();
+      renderDashboard();
+    }
+
+    function updateAvailableSlotOptions(preferredSlot = '', ignoreIndex = -1) {
+      const room = cleanRoomName(document.getElementById('fRoomSelect').value);
+      const date = document.getElementById('fDateInput').value;
+      const slotSelect = document.getElementById('fSlotSelect');
+      slotSelect.innerHTML = '';
+
+      const dayBookings = reservations.filter((r, idx) => r.date === date && cleanRoomName(r.room).toLowerCase() === room.toLowerCase() && idx !== ignoreIndex);
+      const fullDayBooked = dayBookings.find(b => b.slot.toLowerCase().includes("full"));
+      const morningBooked = dayBookings.find(b => b.slot.toLowerCase().includes("morning"));
+      const nightBooked = dayBookings.find(b => b.slot.toLowerCase().includes("night"));
+
+      TIME_SLOTS.forEach(slot => {
+        let isAllowed = true;
+
+        if (slot.includes("Full Day") && (morningBooked || nightBooked || fullDayBooked)) {
+          isAllowed = false;
+        } else if ((slot.includes("Morning") || slot.includes("Night")) && fullDayBooked) {
+          isAllowed = false;
+        } else if (slot.includes("Morning") && morningBooked) {
+          isAllowed = false;
+        } else if (slot.includes("Night") && nightBooked) {
+          isAllowed = false;
+        }
+
+        if (isAllowed || isSlotMatch(slot, preferredSlot)) {
+          const opt = document.createElement('option');
+          opt.value = slot;
+          opt.textContent = slot;
+          if (isSlotMatch(slot, preferredSlot)) opt.selected = true;
+          slotSelect.appendChild(opt);
+        }
+      });
+
+      if (slotSelect.options.length === 0) {
+        const opt = document.createElement('option');
+        opt.value = "";
+        opt.textContent = "No slots available for this date";
+        slotSelect.appendChild(opt);
+      }
+    }
+
+    function openModal(room = '', slot = '', date = '') {
+      document.getElementById('editIndex').value = -1;
+      document.getElementById('modalHeading').innerText = "Add New Reservation";
+      document.getElementById('submitBtn').innerText = "Confirm Booking";
+
+      const select = document.getElementById('fRoomSelect');
+      select.innerHTML = '';
+      roomList.forEach(r => {
+        const cleanR = cleanRoomName(r);
+        const opt = document.createElement('option');
+        opt.value = cleanR; opt.textContent = cleanR;
+        if (cleanR.toLowerCase() === cleanRoomName(room).toLowerCase()) opt.selected = true;
+        select.appendChild(opt);
+      });
+
+      document.getElementById('fDateInput').value = date || toIsoDate(selectedDate);
+      document.getElementById('fCheckoutTime').value = "10:00";
+      document.getElementById('fAmountInput').value = "0";
+      document.getElementById('fGuestInput').value = "";
+      document.getElementById('fStatusSelect').value = "Yet to Check-In";
+      document.querySelector('input[name="idReceived"][value="Yes"]').checked = true;
+
+      ['ckComfort', 'ckBedsheet', 'ckTowel', 'ckMat', 'ckHandwash', 'ckKitchen', 'ckMasala'].forEach(id => {
+        document.getElementById(id).checked = false;
+      });
+
+      updateAvailableSlotOptions(slot);
+      document.getElementById('modalBackdrop').style.display = 'flex';
+    }
+
+    function editBooking(idx) {
+      const b = reservations[idx];
+      if (!b) return;
+
+      document.getElementById('editIndex').value = idx;
+      document.getElementById('modalHeading').innerText = "Modify Reservation";
+      document.getElementById('submitBtn').innerText = "Update Booking";
+
+      const select = document.getElementById('fRoomSelect');
+      select.innerHTML = '';
+      roomList.forEach(r => {
+        const cleanR = cleanRoomName(r);
+        const opt = document.createElement('option');
+        opt.value = cleanR; opt.textContent = cleanR;
+        if (cleanR.toLowerCase() === cleanRoomName(b.room).toLowerCase()) opt.selected = true;
+        select.appendChild(opt);
+      });
+
+      document.getElementById('fPlatformSelect').value = b.source;
+      document.getElementById('fDateInput').value = b.date;
+      document.getElementById('fCheckoutTime').value = b.checkoutTime || "10:00";
+      document.getElementById('fAmountInput').value = b.amount || 0;
+      document.getElementById('fGuestInput').value = b.guest;
+      document.getElementById('fStatusSelect').value = b.status;
+
+      const isYes = b.idReceived === 'Yes';
+      document.querySelector(`input[name="idReceived"][value="${isYes ? 'Yes' : 'No'}"]`).checked = true;
+
+      const chk = b.checklist || [];
+      document.getElementById('ckComfort').checked = chk.includes('Comfort');
+      document.getElementById('ckBedsheet').checked = chk.includes('Bedsheet');
+      document.getElementById('ckTowel').checked = chk.includes('Towel');
+      document.getElementById('ckMat').checked = chk.includes('Mat');
+      document.getElementById('ckHandwash').checked = chk.includes('Handwash');
+      document.getElementById('ckKitchen').checked = chk.includes('Kitchen Set');
+      document.getElementById('ckMasala').checked = chk.includes('Masala');
+
+      updateAvailableSlotOptions(b.slot, idx);
+      document.getElementById('modalBackdrop').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('modalBackdrop').style.display = 'none';
+      document.getElementById('bookingEntryForm').reset();
+    }
+
+    document.getElementById('bookingEntryForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const slotVal = document.getElementById('fSlotSelect').value;
+      if (!slotVal) {
+        alert("Please select a valid slot.");
+        return;
+      }
+
+      const verifiedItems = [];
+      const checklistMap = {
+        ckComfort: 'Comfort', ckBedsheet: 'Bedsheet', ckTowel: 'Towel',
+        ckMat: 'Mat', ckHandwash: 'Handwash', ckKitchen: 'Kitchen Set', ckMasala: 'Masala'
+      };
+
+      for (let id in checklistMap) {
+        if (document.getElementById(id).checked) verifiedItems.push(checklistMap[id]);
+      }
+
+      const idSelected = document.querySelector('input[name="idReceived"]:checked').value;
+      const editIdx = parseInt(document.getElementById('editIndex').value, 10);
+
+      const bookingObj = {
+        room: cleanRoomName(document.getElementById('fRoomSelect').value),
+        source: document.getElementById('fPlatformSelect').value,
+        slot: slotVal,
+        date: document.getElementById('fDateInput').value,
+        checkoutTime: document.getElementById('fCheckoutTime').value,
+        amount: Number(document.getElementById('fAmountInput').value) || 0,
+        guest: document.getElementById('fGuestInput').value,
+        status: document.getElementById('fStatusSelect').value,
+        idReceived: idSelected,
+        checklist: verifiedItems
+      };
+
+      if (editIdx >= 0) {
+        reservations[editIdx] = bookingObj;
+      } else {
+        reservations.unshift(bookingObj);
+      }
+
+      persistData();
+      closeModal();
+      renderDashboard();
+    });
+
+    function removeReservation(index) {
+      if (confirm('Delete this reservation?')) {
+        reservations.splice(index, 1);
+        persistData();
+        renderDashboard();
+      }
+    }
+
+    function addCustomRoom() {
+      const val = prompt('Enter New Room Name/Number:');
+      if (val && val.trim()) {
+        const cleanVal = val.trim();
+        if (!roomList.includes(cleanVal)) {
+          roomList.push(cleanVal);
+          persistData();
+          renderDashboard();
+        }
+      }
+    }
+
+    // Firebase Realtime Database — real multi-device shared data
+    // IMPORTANT: Paste the SAME Firebase Web App config on every device.
+    const FIREBASE_CONFIG_KEY = 'staytrack_firebase_config_v1';
+    const SYNC_KEY_STORAGE = 'staytrack_sync_ws_id';
+    let syncWorkspaceId = localStorage.getItem(SYNC_KEY_STORAGE) || 'staytrack-nishant-live';
+    let firebaseDb = null;
+    let firebaseReady = false;
+    let firebaseListening = false;
+    let syncingFromCloud = false;
+
+    function setSyncStatus(text, ok = true) {
+      const el = document.getElementById('syncText');
+      if (el) el.innerText = text;
+      const dot = document.querySelector('.sync-dot');
+      if (dot) dot.style.background = ok ? '#10b981' : '#f59e0b';
+    }
+
+    function getSavedFirebaseConfig() {
+      try {
+        return JSON.parse(localStorage.getItem(FIREBASE_CONFIG_KEY) || 'null');
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function askForFirebaseConfig() {
+      const example = JSON.stringify({
+        apiKey: 'YOUR_API_KEY',
+        authDomain: 'YOUR_PROJECT.firebaseapp.com',
+        databaseURL: 'https://YOUR_PROJECT-default-rtdb.firebaseio.com',
+        projectId: 'YOUR_PROJECT_ID',
+        storageBucket: 'YOUR_PROJECT.appspot.com',
+        messagingSenderId: 'YOUR_SENDER_ID',
+        appId: 'YOUR_APP_ID'
+      }, null, 2);
+      const raw = prompt('Firebase Web App Config JSON paste karo. Firebase Console → Project settings → Your apps → Web app se copy karo. Example:\n\n' + example);
+      if (!raw) return null;
+      try {
+        const cfg = JSON.parse(raw);
+        if (!cfg.apiKey || !cfg.projectId || !cfg.appId || !cfg.databaseURL) {
+          throw new Error('apiKey, projectId, appId aur databaseURL required hain.');
+        }
+        localStorage.setItem(FIREBASE_CONFIG_KEY, JSON.stringify(cfg));
+        return cfg;
+      } catch (e) {
+        alert('Firebase config invalid hai: ' + e.message);
+        return null;
+      }
+    }
+
+    async function initFirebaseSync(forceSetup = false) {
+      try {
+        let cfg = getSavedFirebaseConfig();
+        if (!cfg || forceSetup) {
+          cfg = askForFirebaseConfig();
+          if (!cfg) {
+            setSyncStatus('Cloud Setup', false);
+            return false;
+          }
+        }
+
+        if (!firebase.apps.length) firebase.initializeApp(cfg);
+        if (!firebase.auth().currentUser) {
+          await firebase.auth().signInAnonymously();
+        }
+        firebaseDb = firebase.database();
+        firebaseReady = true;
+        setSyncStatus('Connecting...', true);
+        await startRealtimeSync();
+        return true;
+      } catch (e) {
+        console.error(e);
+        firebaseReady = false;
+        setSyncStatus('Cloud Error', false);
+        alert('Firebase connect nahi hua. Firebase Authentication me Anonymous sign-in aur Realtime Database enable hai ya nahi check karo.\n\n' + e.message);
+        return false;
+      }
+    }
+
+    function cloudRef() {
+      return firebaseDb.ref('staytrack/workspaces/' + encodeURIComponent(syncWorkspaceId));
+    }
+
+    async function startRealtimeSync() {
+      if (!firebaseDb || firebaseListening) return;
+      firebaseListening = true;
+      const ref = cloudRef();
+      const snap = await ref.once('value');
+      const cloud = snap.val();
+
+      if (cloud && Array.isArray(cloud.rooms) && Array.isArray(cloud.bookings)) {
+        syncingFromCloud = true;
+        roomList = cloud.rooms.map(cleanRoomName).filter(Boolean);
+        reservations = Array.isArray(cloud.bookings) ? cloud.bookings : [];
+        localStorage.setItem('st_pro_rooms', JSON.stringify(roomList));
+        localStorage.setItem('st_pro_bookings', JSON.stringify(reservations));
+        renderDashboard();
+        syncingFromCloud = false;
+      } else {
+        await pushToCloud();
+      }
+
+      ref.on('value', snapshot => {
+        const data = snapshot.val();
+        if (!data || syncingFromCloud) return;
+        if (Array.isArray(data.rooms) && Array.isArray(data.bookings)) {
+          syncingFromCloud = true;
+          roomList = data.rooms.map(cleanRoomName).filter(Boolean);
+          reservations = data.bookings;
+          localStorage.setItem('st_pro_rooms', JSON.stringify(roomList));
+          localStorage.setItem('st_pro_bookings', JSON.stringify(reservations));
+          renderDashboard();
+          syncingFromCloud = false;
+          setSyncStatus('Live Sync', true);
+        }
+      }, err => {
+        console.error(err);
+        setSyncStatus('Sync Error', false);
+      });
+
+      setSyncStatus('Live Sync', true);
+    }
+
+    async function setupSyncId() {
+      const newId = prompt('Same Shared Workspace ID har device par use karo:', syncWorkspaceId);
+      if (newId && newId.trim()) {
+        syncWorkspaceId = newId.trim();
+        localStorage.setItem(SYNC_KEY_STORAGE, syncWorkspaceId);
+        firebaseListening = false;
+        if (firebaseDb) firebaseDb.ref('staytrack/workspaces/' + encodeURIComponent(syncWorkspaceId)).off();
+        await initFirebaseSync(false);
+      }
+    }
+
+    async function pushToCloud() {
+      if (!firebaseDb || !firebaseReady || syncingFromCloud) return;
+      try {
+        await cloudRef().set({
+          rooms: roomList,
+          bookings: reservations,
+          updatedAt: Date.now()
+        });
+        setSyncStatus('Live Sync', true);
+      } catch (e) {
+        console.error(e);
+        setSyncStatus('Sync Error', false);
+      }
+    }
+
+    function persistData() {
+      localStorage.setItem('st_pro_rooms', JSON.stringify(roomList));
+      localStorage.setItem('st_pro_bookings', JSON.stringify(reservations));
+      pushToCloud();
+    }
+
+    function exportData() {
+      const exportJson = JSON.stringify({ rooms: roomList, bookings: reservations }, null, 2);
+      const blob = new Blob([exportJson], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `staytrack_backup_${toIsoDate(new Date())}.json`;
+      a.click();
+    }
+
+    function triggerImport() {
+      document.getElementById('jsonFileInput').click();
+    }
+
+    function handleImportFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          let loadedBookings = [];
+          let loadedRooms = [];
+
+          if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+            if (Array.isArray(parsed.bookings)) loadedBookings = parsed.bookings;
+            if (Array.isArray(parsed.rooms)) loadedRooms = parsed.rooms;
+          } else if (Array.isArray(parsed)) {
+            loadedBookings = parsed;
+          }
+
+          if (loadedBookings.length === 0 && loadedRooms.length === 0) {
+            alert('File me valid booking ya room data nahi mila.');
+            return;
+          }
+
+          const cleanedIncomingRooms = loadedRooms.map(cleanRoomName).filter(Boolean);
+          const cleanedIncomingBookings = loadedBookings.map(b => {
+            const rName = cleanRoomName(b.room || b.roomName);
+            if (rName && !cleanedIncomingRooms.includes(rName)) {
+              cleanedIncomingRooms.push(rName);
+            }
+            return {
+              room: rName,
+              source: b.source || b.platform || "Direct Booking",
+              slot: b.slot || b.timeSlot || "Full Day (12pm - 10am)",
+              date: normalizeDate(b.date),
+              checkoutTime: b.checkoutTime || "10:00",
+              amount: Number(b.amount) || 0,
+              guest: b.guest || b.guestName || "Guest",
+              status: b.status || "Yet to Check-In",
+              idReceived: (b.idReceived === 'Yes' || b.idReceived === true || b.id === 'Verified') ? 'Yes' : 'No',
+              checklist: Array.isArray(b.checklist) ? b.checklist : []
+            };
+          });
+
+          cleanedIncomingRooms.forEach(r => {
+            if (!roomList.includes(r)) roomList.push(r);
+          });
+
+          reservations = [...cleanedIncomingBookings, ...reservations];
+          persistData();
+
+          renderDashboard();
+          alert(`Successfully imported ${cleanedIncomingBookings.length} bookings! Data dono screens par synchronize ho gaya.`);
+        } catch (err) {
+          alert('Error: JSON file format corrupt hai: ' + err.message);
+        } finally {
+          event.target.value = '';
+        }
+      };
+
+      reader.readAsText(file);
+    }
+
+    window.onload = async function() {
+      renderDashboard();
+      const cfg = getSavedFirebaseConfig();
+      if (cfg) {
+        await initFirebaseSync(false);
+      } else {
+        setSyncStatus('Cloud Setup', false);
+      }
+    };
+  </script>
+</body>
+</html>
